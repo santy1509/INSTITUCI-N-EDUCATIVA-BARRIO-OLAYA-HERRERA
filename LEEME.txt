@@ -1,0 +1,33 @@
+# Control de llegadas tarde — versión local
+
+## Cómo abrir
+1. Descomprime la carpeta.
+2. Ábrela en Visual Studio Code.
+3. Abre `index.html` con la extensión Live Server (recomendado).
+4. En el primer ingreso, crea el administrador principal.
+
+## Uso
+- Agrega estudiantes desde la pestaña Estudiantes o usa Importar desde Excel.
+- Para Excel, utiliza la plantilla `plantilla_estudiantes.xlsx` (columnas: Nombre del estudiante, Grupo, WhatsApp del acudiente). También acepta CSV.
+- Los grupos se pueden escribir como códigos (por ejemplo 100200) o formatos como 10-02. La lista se ordena automáticamente por grupo y nombre.
+- Si un estudiante ya existe en el mismo grupo, no se duplica: se reactiva y se actualiza el teléfono si el archivo trae uno válido.
+- Para cada estudiante ingresa grupo y número autorizado del acudiente.
+- Al guardar la tercera llegada, el sistema crea un aviso y abre WhatsApp con el texto listo.
+- El administrador debe revisar y pulsar Enviar en WhatsApp.
+- En Historial y avisos puedes abrir de nuevo el chat o marcar el aviso como atendido.
+- En Administradores puedes crear otras cuentas para este mismo navegador.
+- En Copias de seguridad puedes exportar o restaurar un archivo JSON.
+
+## Institución
+Institución Educativa Barrio Olaya Herrera. Este nombre aparece en el encabezado y en los mensajes preparados para WhatsApp.
+
+## Grupos
+60100, 60200, 60300, 60400, 70100, 70200, 80100, 80200, 90100, 90200, 100100, 100200, 110100, 110200.
+
+## Limitaciones importantes
+- Todo se guarda en el almacenamiento local del navegador. No se comparte entre computadores, celulares ni perfiles de navegador.
+- Si se borran los datos del navegador, se puede perder la información. Descarga copias de seguridad regularmente.
+- El inicio de sesión es una barrera básica para organizar el acceso en el mismo navegador; no es seguridad institucional. Alguien con acceso al dispositivo o conocimientos técnicos podría acceder o modificar los datos.
+- No publiques teléfonos ni datos personales de estudiantes. Utiliza datos reales solo con autorización de la institución y de acuerdo con sus normas de protección de datos.
+- La lectura de archivos `.xlsx` utiliza una librería cargada desde internet; si no hay conexión, guarda el Excel como CSV e importa ese archivo.
+- WhatsApp normal no permite que una página envíe mensajes automáticamente. El administrador debe pulsar Enviar.

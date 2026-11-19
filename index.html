@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control de llegadas tarde</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <main class="container">
+    <header class="top">
+  <div class="institution-header">
+    <img src="img/escudo-colegio.png"
+         alt="Escudo institucional"
+         class="school-logo">
+
+    <div>
+      <p class="eyebrow">INSTITUCIÓN EDUCATIVA</p>
+      <h1 class="school-name">BARRIO OLAYA HERRERA</h1>
+      <p class="header-subtitle">Sistema de control de llegadas tarde</p>
+    </div>
+  </div>
+
+  <span class="local-tag">Almacenamiento local</span>
+</header>
+
+    <section id="setupView" class="panel auth-panel hidden">
+      <h2>Crear administrador principal</h2>
+      <p class="muted">Es el primer acceso. Crea la cuenta que permitirá administrar este navegador.</p>
+      <form id="setupForm" class="form-grid">
+        <label>Nombre del administrador<input id="setupName" required maxlength="60"></label>
+        <label>Usuario<input id="setupUser" required minlength="3" maxlength="30" autocomplete="username"></label>
+        <label>Contraseña<input id="setupPass" type="password" required minlength="8" autocomplete="new-password"></label>
+        <button class="primary" type="submit">Crear administrador</button>
+      </form>
+    </section>
+
+    <section id="loginView" class="panel auth-panel hidden">
+      <h2>Iniciar sesión</h2>
+      <form id="loginForm" class="form-grid">
+        <label>Usuario<input id="loginUser" required autocomplete="username"></label>
+        <label>Contraseña<input id="loginPass" type="password" required autocomplete="current-password"></label>
+        <button class="primary" type="submit">Ingresar</button>
+      </form>
+      <p id="loginError" class="error" role="alert"></p>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="welcome panel">
+        <div><span class="muted">Sesión iniciada</span><strong id="currentAdmin"></strong></div>
+        <button id="logoutBtn" class="secondary">Cerrar sesión</button>
+      </div>
+
+      <nav class="tabs" aria-label="Secciones">
+        <button class="tab active" data-tab="studentsPanel">Estudiantes</button>
+        <button class="tab" data-tab="historyPanel">Historial y avisos</button>
+        <button class="tab" data-tab="adminsPanel">Administradores</button>
+        <button class="tab" data-tab="backupPanel">Copias de seguridad</button>
+      </nav>
+
+      <section id="studentsPanel" class="panel tab-panel">
+        <div class="section-heading">
+          <div><h2>Estudiantes</h2><p class="muted">Registra una llegada tarde por cada clic.</p></div>
+          <div class="button-row compact-actions"><button id="importStudentsBtn" class="secondary">Importar desde Excel</button><button id="newStudentBtn" class="primary">+ Agregar estudiante</button></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span>Estudiantes activos</span><strong id="statStudents">0</strong></div>
+          <div class="stat"><span>Registros históricos</span><strong id="statRecords">0</strong></div>
+          <div class="stat"><span>Avisos pendientes</span><strong id="statNotices">0</strong></div>
+        </div>
+        <div class="filters">
+          <input id="searchInput" placeholder="Buscar por nombre..." aria-label="Buscar estudiante">
+          <select id="groupFilter" aria-label="Filtrar por grupo"><option value="">Todos los grupos</option></select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Estudiante</th><th>Grupo</th><th>Acumuladas</th><th>Acciones</th></tr></thead>
+            <tbody id="studentsTable"></tbody>
+          </table>
+        </div>
+        <p class="hint">Al llegar a tres, se registra el aviso y se abre WhatsApp con el mensaje preparado. El administrador debe pulsar Enviar en WhatsApp.</p>
+        <input id="studentsExcelFile" class="hidden" type="file" accept=".xlsx,.xls,.csv">
+        <p class="hint">Excel: usa las columnas Nombre del estudiante, Grupo y WhatsApp del acudiente. La página ordenará automáticamente por grupo y nombre. <a href="plantilla_estudiantes.xlsx" download>Descargar plantilla de Excel</a>.</p>
+      </section>
+
+      <section id="historyPanel" class="panel tab-panel hidden">
+        <div class="section-heading"><div><h2>Historial y avisos</h2><p class="muted">Los registros se conservan hasta que un administrador los borre.</p></div>
+          <button id="clearHistoryBtn" class="danger">Borrar historial</button>
+        </div>
+        <h3>Avisos a acudientes</h3>
+        <div id="noticesList" class="stack"></div>
+        <h3>Historial de llegadas</h3>
+        <div class="table-wrap"><table><thead><tr><th>Fecha y hora</th><th>Estudiante</th><th>Grupo</th><th>N.º llegada</th></tr></thead><tbody id="historyTable"></tbody></table></div>
+      </section>
+
+      <section id="adminsPanel" class="panel tab-panel hidden">
+        <h2>Administradores autorizados</h2>
+        <p class="muted">Las cuentas creadas aquí funcionan solamente en este navegador.</p>
+        <form id="adminForm" class="form-grid two">
+          <label>Nombre<input id="adminName" required maxlength="60"></label>
+          <label>Usuario<input id="adminUser" required minlength="3" maxlength="30"></label>
+          <label>Contraseña (mínimo 8 caracteres)<input id="adminPass" type="password" required minlength="8"></label>
+          <button class="primary" type="submit">Agregar administrador</button>
+        </form>
+        <div id="adminsList" class="stack"></div>
+      </section>
+
+      <section id="backupPanel" class="panel tab-panel hidden">
+        <h2>Copias de seguridad</h2>
+        <p>Exporta una copia para conservar estudiantes, administradores, llegadas y avisos. Guárdala en un lugar privado.</p>
+        <div class="button-row">
+          <button id="exportBtn" class="primary">Descargar copia de seguridad</button>
+          <label class="file-button">Restaurar copia JSON<input id="importFile" type="file" accept="application/json"></label>
+        </div>
+        <p class="hint">Restaurar reemplaza los datos locales actuales. Exporta primero una copia si quieres conservarlos.</p>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="studentDialog">
+    <form id="studentForm" method="dialog">
+      <div class="section-heading"><h2 id="studentDialogTitle">Agregar estudiante</h2><button type="button" id="closeStudentDialog" class="icon-button" aria-label="Cerrar">×</button></div>
+      <input type="hidden" id="studentId">
+      <label>Nombre completo<input id="studentName" required maxlength="100"></label>
+      <label>Grupo<select id="studentGroup" required></select></label>
+      <label>WhatsApp del acudiente<input id="studentPhone" inputmode="tel" placeholder="Ej. 573001234567"></label>
+      <p class="hint">Número con indicativo de país. Para Colombia: 57 + los 10 dígitos. No ingreses números sin autorización.</p>
+      <div class="button-row"><button type="button" id="cancelStudent" class="secondary">Cancelar</button><button type="submit" class="primary">Guardar estudiante</button></div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/estudiantes.js"></script>
+  <script src="js/almacenamiento.js"></script>
+  <script src="js/autenticacion.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
