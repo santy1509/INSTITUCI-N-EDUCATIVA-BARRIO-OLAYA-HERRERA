@@ -1,24 +1,38 @@
 (() => {
-  const bytesToHex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2,"0")).join("");
-  async function hash(password, salt) {
-    const data = new TextEncoder().encode(`${salt}:${password}`);
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    return bytesToHex(digest);
-  }
-  function makeSalt() {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    return bytesToHex(bytes);
-  }
   window.Auth = {
-    async create(name, username, password) {
-      const salt = makeSalt();
-      return { id: crypto.randomUUID(), name, username: username.trim().toLowerCase(), salt, passwordHash: await hash(password, salt) };
+    signIn(email, password) {
+      return auth.signInWithEmailAndPassword(email.trim().toLowerCase(), password);
     },
-    async verify(username, password) {
-      const admin = Store.get().admins.find(a => a.username === username.trim().toLowerCase());
-      if (!admin) return null;
-      const candidate = await hash(password, admin.salt);
-      return candidate === admin.passwordHash ? admin : null;
+
+    signOut() {
+      return auth.signOut();
+    },
+
+    onChange(callback) {
+      return auth.onAuthStateChanged(callback);
+    },
+
+    currentUser() {
+      return auth.currentUser;
+    },
+
+    async getProfile(uid) {
+      const snap = await db.collection("usuarios").doc(uid).get();
+      return snap.exists ? { uid: snap.id, ...snap.data() } : null;
+    },
+
+    async createUser(email, password, nombre, rol) {
+      const created = await FirebaseService.createAuthUser(email, password);
+      const profile = {
+        uid: created.uid,
+        nombre: nombre.trim(),
+        correo: created.email,
+        rol,
+        activo: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection("usuarios").doc(created.uid).set(profile);
+      return { ...profile, uid: created.uid };
     }
   };
 })();

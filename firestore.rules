@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userExists() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+
+    function userData() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    function activeUser() {
+      return userExists() && userData().activo == true;
+    }
+
+    function isAdmin() {
+      return activeUser() && userData().rol == "admin";
+    }
+
+    function isTeacher() {
+      return activeUser() && userData().rol == "profesor";
+    }
+
+    match /usuarios/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      // La primera cuenta admin se crea manualmente desde Firebase Console.
+      // Después, solo administradores activos pueden gestionar perfiles.
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /estudiantes/{studentId} {
+      allow read: if activeUser();
+      allow create, delete: if isAdmin();
+      // Profesores solo pueden modificar el contador usado por el registro de llegadas.
+      allow update: if isAdmin()
+        || (isTeacher()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["lateCount"])
+            && request.resource.data.lateCount is int
+            && request.resource.data.lateCount >= 0
+            && request.resource.data.lateCount <= 2);
+    }
+
+    match /llegadas/{arrivalId} {
+      allow read: if activeUser();
+      allow create: if activeUser()
+        && request.resource.data.studentId is string
+        && request.resource.data.name is string
+        && request.resource.data.group is string
+        && request.resource.data.date is string
+        && request.resource.data.arrivalNumber in [1, 2, 3];
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /avisos/{noticeId} {
+      allow read: if activeUser();
+      allow create: if activeUser()
+        && request.resource.data.studentId is string
+        && request.resource.data.name is string
+        && request.resource.data.group is string
+        && request.resource.data.date is string
+        && request.resource.data.status == "Pendiente";
+      allow update: if activeUser()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"])
+        && request.resource.data.status in ["Pendiente", "Atendido"];
+      allow delete: if isAdmin();
+    }
+  }
+}
